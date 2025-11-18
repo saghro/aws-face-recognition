@@ -1,50 +1,247 @@
 # Dependencies
 node_modules/
 **/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp/
+.pnp.js
 
 # OS files
 .DS_Store
 **/.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 *.swp
 *.swo
 *~
+desktop.ini
 
 # Logs
 *.log
 logs/
+*.log.*
+lerna-debug.log*
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Environment variables
+# Environment variables (sensible)
 .env
+.env.*
 .env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.local
+.secrets
 
-# IDE
+# Credentials et clés (sécurité critique)
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+*.p7b
+*.p7c
+*.der
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+known_hosts
+*.secret
+*.credentials
+credentials.json
+aws-credentials
+!public.key
+!*.pub
+
+# AWS (sensible)
+.aws/
+aws-exports.js
+amplifyconfiguration.json
+amplifyconfiguration.dart
+amplify_outputs.json
+
+# Secrets Manager
+secrets/
+*.secret
+*.token
+*.session
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+dump.sql
+*.sql.gz
+
+# IDE et éditeurs
 .idea/
 .vscode/
 *.code-workspace
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+*.iml
+*.ipr
+*.iws
+.fleet/
+.history/
 
 # Build outputs
 dist/
 build/
+out/
+.next/
+.nuxt/
+.cache/
 *.zip
+*.tar.gz
+*.tgz
+*.rar
 
 # Temporary files
 tmp/
 temp/
 *.tmp
+*.temp
+.cache/
+.tmp/
 
-# Coverage
+# Coverage et tests
 coverage/
 .nyc_output/
+.jest/
+test-results/
+playwright-report/
+playwright/.cache/
 
-# AWS
-.aws/
+# Lambda deployment packages
+*.zip
+lambda/function.zip
+lambda.zip
 
-# Keys (security)
-*.pem
-*.key
-!public.key
-
-# Lock files (optional - uncomment if you want to ignore)
+# Package manager locks (optionnel - décommenter si besoin)
 # package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Configurations locales
+config.local.*
+config/*.local.*
+*.local.json
+*.local.js
+*.local.ts
+
+# S3 uploads locaux
+uploads/
+public/uploads/
+media/uploads/
+
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+
+# OS generated files
+.directory
+.Trash-*
+
+# Serverless
+.serverless/
+.serverless_nextjs/
+.serverless/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+terraform.tfvars
+
+# CloudFormation
+*.template.local
+cloudformation-outputs.json
+
+# Python (si utilisé)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Java (si utilisé)
+*.class
+*.jar
+*.war
+*.ear
+target/
+
+# Archives et compressions
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Fichiers de sauvegarde
+*~
+*.swp
+*.swo
+*.bak
+*.backup
+*.old
+
+# Certificats et SSL
+*.csr
+*.pem
+*.p7c
+*.p12
+*.pfx
+*.crt
+*.cert
+*.cer
+*.key
+*.keystore
+*.truststore
+ssl/
+
+# Variables d'environnement spécifiques au projet
+.env.production
+.env.staging
+.env.development
+.env.test
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Fichiers de configuration sensibles
+config.json
+config.production.json
+config.staging.json
+secrets.json
+credentials.json
+apikeys.json
+
+# Fichiers de lock dans node_modules
+**/node_modules/.package-lock.json
+**/node_modules/.bin/
 
