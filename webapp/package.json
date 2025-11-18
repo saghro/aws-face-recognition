@@ -1,14 +1,22 @@
 {
   "name": "face-webapp",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app.js",
+    "dev": "node app.js",
+    "test": "echo \"Aucun test défini\" && exit 0"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "aws",
+    "rekognition",
+    "s3",
+    "mysql",
+    "express"
+  ],
+  "author": "Face Recognition Lab",
   "license": "ISC",
-  "description": "",
+  "description": "Interface Express pour charger des visages vers S3 et les visualiser depuis la base MySQL",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.933.0",
     "express": "^5.1.0",

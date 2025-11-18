@@ -7,6 +7,17 @@ const rekognitionClient = new RekognitionClient({ region: process.env.AWS_REGION
 const s3Client = new S3Client({ region: process.env.AWS_REGION });
 const secretsClient = new SecretsManagerClient({ region: process.env.AWS_REGION });
 
+const beautifyName = (value = '') =>
+  value
+    .toString()
+    .trim()
+    .toLowerCase()
+    .split(/[\s_-]+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
+    || 'Inconnu';
+
 exports.handler = async (event) => {
   try {
     console.log('Event received:', JSON.stringify(event, null, 2));
@@ -25,9 +36,9 @@ exports.handler = async (event) => {
       throw new Error('Filename must be in format: lastname_firstname.jpg');
     }
     
-    const lastname = parts[0];
-    const firstname = parts.slice(1).join(' '); // Au cas où le prénom a des underscores
-    const externalId = fileNameWithoutExt;
+      const lastname = beautifyName(parts[0]);
+      const firstname = beautifyName(parts.slice(1).join(' '));
+      const externalId = fileNameWithoutExt;
     
     console.log(`Parsed filename: ${lastname} ${firstname}, externalId: ${externalId}`);
     
@@ -71,13 +82,16 @@ exports.handler = async (event) => {
     });
     
     // 6. Insérer dans la base de données
-    const query = `
-      INSERT INTO person (lastname, firstname, identity)
-      VALUES (?, ?, ?)
-      ON DUPLICATE KEY UPDATE identity = ?
-    `;
-    
-    await connection.execute(query, [lastname, firstname, faceId, faceId]);
+      const query = `
+        INSERT INTO person (lastname, firstname, identity, object_key)
+        VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE 
+          identity = VALUES(identity),
+          object_key = VALUES(object_key),
+          updated_at = CURRENT_TIMESTAMP
+      `;
+      
+      await connection.execute(query, [lastname, firstname, faceId, key]);
     
     console.log(`Saved to DB: ${lastname} ${firstname} → ${faceId}`);
     
