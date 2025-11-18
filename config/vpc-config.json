@@ -1,0 +1,144 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "VPC dédiée au laboratoire de reconnaissance faciale (2 AZ, sous-réseaux publics/privés, endpoints S3/SecretsManager)",
+  "Parameters": {
+    "VpcCidr": {
+      "Type": "String",
+      "Default": "10.0.0.0/16",
+      "Description": "Plage CIDR principale"
+    },
+    "PublicSubnetCidrA": { "Type": "String", "Default": "10.0.1.0/24" },
+    "PublicSubnetCidrB": { "Type": "String", "Default": "10.0.2.0/24" },
+    "PrivateSubnetCidrA": { "Type": "String", "Default": "10.0.11.0/24" },
+    "PrivateSubnetCidrB": { "Type": "String", "Default": "10.0.12.0/24" }
+  },
+  "Resources": {
+    "LabVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": { "Ref": "VpcCidr" },
+        "EnableDnsHostnames": true,
+        "EnableDnsSupport": true,
+        "Tags": [{ "Key": "Name", "Value": "faces-lab-vpc" }]
+      }
+    },
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway",
+      "Properties": {
+        "Tags": [{ "Key": "Name", "Value": "faces-lab-igw" }]
+      }
+    },
+    "AttachGateway": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": { "Ref": "LabVPC" },
+        "InternetGatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+    "PublicRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": { "Ref": "LabVPC" },
+        "Tags": [{ "Key": "Name", "Value": "faces-public-rt" }]
+      }
+    },
+    "DefaultPublicRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": { "Ref": "PublicRouteTable" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "InternetGateway" }
+      },
+      "DependsOn": "AttachGateway"
+    },
+    "PublicSubnetA": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "LabVPC" },
+        "CidrBlock": { "Ref": "PublicSubnetCidrA" },
+        "AvailabilityZone": { "Fn::Select": [0, { "Fn::GetAZs": "" }] },
+        "MapPublicIpOnLaunch": true,
+        "Tags": [{ "Key": "Name", "Value": "faces-public-a" }]
+      }
+    },
+    "PublicSubnetB": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "LabVPC" },
+        "CidrBlock": { "Ref": "PublicSubnetCidrB" },
+        "AvailabilityZone": { "Fn::Select": [1, { "Fn::GetAZs": "" }] },
+        "MapPublicIpOnLaunch": true,
+        "Tags": [{ "Key": "Name", "Value": "faces-public-b" }]
+      }
+    },
+    "PrivateSubnetA": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "LabVPC" },
+        "CidrBlock": { "Ref": "PrivateSubnetCidrA" },
+        "AvailabilityZone": { "Fn::Select": [0, { "Fn::GetAZs": "" }] },
+        "MapPublicIpOnLaunch": false,
+        "Tags": [{ "Key": "Name", "Value": "faces-private-a" }]
+      }
+    },
+    "PrivateSubnetB": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "LabVPC" },
+        "CidrBlock": { "Ref": "PrivateSubnetCidrB" },
+        "AvailabilityZone": { "Fn::Select": [1, { "Fn::GetAZs": "" }] },
+        "MapPublicIpOnLaunch": false,
+        "Tags": [{ "Key": "Name", "Value": "faces-private-b" }]
+      }
+    },
+    "PublicSubnetARouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PublicSubnetA" },
+        "RouteTableId": { "Ref": "PublicRouteTable" }
+      }
+    },
+    "PublicSubnetBRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PublicSubnetB" },
+        "RouteTableId": { "Ref": "PublicRouteTable" }
+      }
+    },
+    "S3Endpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "ServiceName": { "Fn::Sub": "com.amazonaws.${AWS::Region}.s3" },
+        "VpcId": { "Ref": "LabVPC" },
+        "RouteTableIds": [{ "Ref": "PublicRouteTable" }]
+      }
+    },
+    "SecretsManagerEndpoint": {
+      "Type": "AWS::EC2::VPCEndpoint",
+      "Properties": {
+        "VpcId": { "Ref": "LabVPC" },
+        "ServiceName": { "Fn::Sub": "com.amazonaws.${AWS::Region}.secretsmanager" },
+        "VpcEndpointType": "Interface",
+        "SubnetIds": [
+          { "Ref": "PrivateSubnetA" },
+          { "Ref": "PrivateSubnetB" }
+        ],
+        "SecurityGroupIds": []
+      }
+    }
+  },
+  "Outputs": {
+    "VpcId": {
+      "Description": "ID de la VPC",
+      "Value": { "Ref": "LabVPC" }
+    },
+    "PublicSubnets": {
+      "Description": "Sous-réseaux publics",
+      "Value": { "Fn::Join": [",", [{ "Ref": "PublicSubnetA" }, { "Ref": "PublicSubnetB" }]] }
+    },
+    "PrivateSubnets": {
+      "Description": "Sous-réseaux privés",
+      "Value": { "Fn::Join": [",", [{ "Ref": "PrivateSubnetA" }, { "Ref": "PrivateSubnetB" }]] }
+    }
+  }
+}

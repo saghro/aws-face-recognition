@@ -1,0 +1,63 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Security Groups pour le laboratoire de reconnaissance faciale",
+  "Parameters": {
+    "VpcId": { "Type": "AWS::EC2::VPC::Id" },
+    "AllowedCidr": {
+      "Type": "String",
+      "Default": "0.0.0.0/0",
+      "Description": "Plage d'adresses autorisée pour l'accès HTTP"
+    }
+  },
+  "Resources": {
+    "AlbSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Entrées HTTP/HTTPS pour l'ALB",
+        "VpcId": { "Ref": "VpcId" },
+        "SecurityGroupIngress": [
+          { "IpProtocol": "tcp", "FromPort": 80, "ToPort": 80, "CidrIp": { "Ref": "AllowedCidr" } },
+          { "IpProtocol": "tcp", "FromPort": 443, "ToPort": 443, "CidrIp": { "Ref": "AllowedCidr" } }
+        ],
+        "SecurityGroupEgress": [
+          { "IpProtocol": "-1", "FromPort": 0, "ToPort": 0, "CidrIp": "0.0.0.0/0" }
+        ],
+        "Tags": [{ "Key": "Name", "Value": "faces-alb-sg" }]
+      }
+    },
+    "AppSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Flux entre l'ALB, l'EC2 et la base RDS",
+        "VpcId": { "Ref": "VpcId" },
+        "SecurityGroupIngress": [
+          { "IpProtocol": "tcp", "FromPort": 3000, "ToPort": 3000, "SourceSecurityGroupId": { "Ref": "AlbSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": 22, "ToPort": 22, "CidrIp": { "Ref": "AllowedCidr" } }
+        ],
+        "SecurityGroupEgress": [
+          { "IpProtocol": "-1", "FromPort": 0, "ToPort": 0, "CidrIp": "0.0.0.0/0" }
+        ],
+        "Tags": [{ "Key": "Name", "Value": "faces-app-sg" }]
+      }
+    },
+    "DatabaseSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Accès MySQL limité aux instances applicatives",
+        "VpcId": { "Ref": "VpcId" },
+        "SecurityGroupIngress": [
+          { "IpProtocol": "tcp", "FromPort": 3306, "ToPort": 3306, "SourceSecurityGroupId": { "Ref": "AppSecurityGroup" } }
+        ],
+        "SecurityGroupEgress": [
+          { "IpProtocol": "-1", "FromPort": 0, "ToPort": 0, "CidrIp": "0.0.0.0/0" }
+        ],
+        "Tags": [{ "Key": "Name", "Value": "faces-db-sg" }]
+      }
+    }
+  },
+  "Outputs": {
+    "AlbSecurityGroupId": { "Value": { "Ref": "AlbSecurityGroup" } },
+    "AppSecurityGroupId": { "Value": { "Ref": "AppSecurityGroup" } },
+    "DatabaseSecurityGroupId": { "Value": { "Ref": "DatabaseSecurityGroup" } }
+  }
+}
