@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# OS files
+.DS_Store
+**/.DS_Store
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# Build outputs
+dist/
+build/
+*.zip
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Coverage
+coverage/
+.nyc_output/
+
+# AWS
+.aws/
+
+# Keys (security)
+*.pem
+*.key
+!public.key
+
+# Lock files (optional - uncomment if you want to ignore)
+# package-lock.json
+
